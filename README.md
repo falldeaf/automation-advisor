@@ -32,7 +32,7 @@ These instructions will help you set up the project on your local machine for de
 
 ## Usage
 
-Type your question in the input field and click the "Send" button. The button will show a loading icon and disable itself briefly, simulating an API call. Once the data is loaded, the app will display the score, explainer text, and the tools and skills lists.
+Type your question in the input field and click the "Send" button. Your task description will be sent to the GPT-4 API and return information about the difficulty and tools/skills needed to automate that task.
 
 ## Contributing
 
