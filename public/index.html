@@ -53,6 +53,7 @@
 
 	async function sendQuestion() {
 		const question = document.getElementById("question-input").value;
+		document.getElementById("question-input").value = "";
 		const sendButton = document.getElementById("send-button");
 		sendButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
 		sendButton.disabled = true;
