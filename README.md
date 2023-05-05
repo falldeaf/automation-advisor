@@ -1,6 +1,6 @@
-# Your App Name
+# Automation-Advisor
 
-Your App Name is a single-page application built using Bootstrap 5. The app takes JSON data and presents it in a visually appealing format, with a dial graphic for the score, explainer text, and side-by-side list boxes for tools and skills.
+Automation-Advisor is a single-page application built using Bootstrap 5. The app takes JSON data and presents it in a visually appealing format, with a dial graphic for the score, explainer text, and side-by-side list boxes for tools and skills.
 
 ![Screenshot of Your App Name](screenshot.png)
 
