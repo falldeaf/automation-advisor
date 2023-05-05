@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+<title>How hard would it be to automate my task?</title>
+</head>
+
+<body>
+<div class="container mt-5">
+	<div class="row">
+	<div class="col">
+		<h1>How hard would it be to automate my task?</h1>
+		<div class="input-group mb-3">
+		<input type="text" id="question-input" class="form-control" placeholder="Type out your task: e.g. Crop a directory of jpegs and put them in a network folder">
+		<button type="button" id="send-button" class="btn btn-primary" onclick="sendQuestion()">Send</button>
+		</div>
+		<div class="mb-3 d-flex justify-content-center" id="score-dial"><canvas id="gaugeCanvas" width="400" height="150"></canvas></div>
+		<div class="mb-3" id="explainer-text"></div>
+		<div class="row">
+		<div class="col">
+			<h3 id="tool-header"></h3>
+			<ul class="list-group" id="tools-list"></ul>
+		</div>
+		<div class="col">
+			<h3 id="skill-header"></h3>
+			<ul class="list-group" id="skills-list"></ul>
+		</div>
+		</div>
+	</div>
+	</div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+	/*const data = {
+"question": "Automate cold-contacting people from an email list to sign up for a newsletter",
+"score": 15,
+"explainer": "This task is relatively easy to automate using an email marketing service, which will allow you to import your list of contacts, create a compelling email template, and automatically send out your cold-contact emails to potential subscribers. You can also track the success of your campaign by monitoring open rates, click-through rates, and new signups.",
+"tools": [
+	"<i class='fa-solid fa-envelope'></i> Email Marketing Service (e.g., Mailchimp, SendGrid)",
+	"<i class='fa-solid fa-database'></i> Spreadsheet or Database (e.g., Excel, Google Sheets)"
+],
+"skills": [
+	"<i class='fa-solid fa-pen'></i> Copywriting",
+	"<i class='fa-solid fa-chart-line'></i> Basic Data Analysis"
+]
+};*/
+	let data = {};
+
+	async function sendQuestion() {
+		const question = document.getElementById("question-input").value;
+		const sendButton = document.getElementById("send-button");
+		sendButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+		sendButton.disabled = true;
+
+		console.log(question);
+
+		//call API
+		const response = await fetch("answer/", {
+			method: "POST",
+			headers: {
+			"Content-Type": "text/plain"
+			},
+			body: question
+		});
+		data = await response.json();
+		console.log(data);
+
+		displayData();
+		resetButton();
+	}
+
+	function resetButton() {
+	const sendButton = document.getElementById("send-button");
+	sendButton.innerHTML = "Send";
+	sendButton.disabled = false;
+	}
+
+	function displayData() {
+	//document.getElementById("score-dial").innerHTML = `<h2>Score: ${data.score}</h2>`;
+	drawGauge(data.score);
+	document.getElementById("explainer-text").innerHTML = `<h4>${data.question}</h4><p>${data.explainer}</p>`;
+	const toolsList = document.getElementById("tools-list");
+	const skillsList = document.getElementById("skills-list");
+	toolsList.innerHTML = "";
+	skillsList.innerHTML = "";
+	document.getElementById("tool-header").innerHTML = `Tools Needed`;
+	data.tools.forEach(tool => {
+		const li = document.createElement("li");
+		li.classList.add("list-group-item");
+		li.innerHTML = `<i class="fas fa-chevron-right me-2"></i>${tool}`;
+		toolsList.appendChild(li);
+	});
+	document.getElementById("skill-header").innerHTML = `Skills Needed`;
+	data.skills.forEach(skill => {
+		const li = document.createElement("li");
+		li.classList.add("list-group-item");
+		li.innerHTML = `<i class="fas fa-chevron-right me-2"></i>${skill}`;
+		skillsList.appendChild(li);
+	});
+	}
+
+	const canvas = document.getElementById('gaugeCanvas');
+	const ctx = canvas.getContext('2d');
+	const centerX = canvas.width / 2;
+	const centerY = canvas.height-12;
+	const radius = 140;
+
+	function drawTickMarks() {
+	ctx.save();
+	ctx.translate(centerX, centerY);
+	ctx.rotate(-Math.PI);
+
+	for (let i = 0; i <= 100; i++) {
+		ctx.beginPath();
+
+		if (i < 33) {
+		ctx.strokeStyle = 'green';
+		} else if (i < 67) {
+		ctx.strokeStyle = 'yellow';
+		} else {
+		ctx.strokeStyle = 'red';
+		}
+
+		ctx.lineWidth = i % 10 === 0 ? 3 : 1;
+		ctx.moveTo(radius - 10, 0);
+		ctx.lineTo(radius, 0);
+		ctx.stroke();
+
+		if (i % 10 === 0) {
+			ctx.rotate(Math.PI / 2);
+		ctx.font = '14px Arial';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillText(i, (radius - 25) * Math.cos(-Math.PI / 2), (radius - 25) * Math.sin(-Math.PI / 2));
+		ctx.rotate(-Math.PI / 2);
+		}
+
+		ctx.rotate(Math.PI / 100);
+	}
+
+	ctx.restore();
+	}
+
+	function drawNeedle(value) {
+	ctx.save();
+	ctx.translate(centerX, centerY);
+	ctx.rotate((Math.PI / 100 * value) - Math.PI / 2);
+	ctx.beginPath();
+	ctx.moveTo(-3, 0);
+	ctx.lineTo(0, -radius + 10);
+	ctx.lineTo(3, 0);
+	ctx.closePath();
+	ctx.fillStyle = 'black';
+	ctx.fill();
+	ctx.restore();
+	}
+
+	function drawGauge(value) {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawTickMarks();
+	drawNeedle(value);
+	}
+
+	// Set the value of the gauge
+	//const value = 50; // Replace this with your desired value (0-100)
+
+	//displayData();
+
+</script>
+</body>
+
+</html>
